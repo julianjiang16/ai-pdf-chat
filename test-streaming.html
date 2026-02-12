@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流式输出测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            min-height: 100px;
+            white-space: pre-wrap;
+        }
+        .streaming {
+            border-left: 3px solid #007bff;
+            background: #f0f8ff;
+        }
+        .cursor {
+            display: inline-block;
+            background: #007bff;
+            width: 2px;
+            height: 1em;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>流式输出功能测试</h1>
+        
+        <div class="test-section">
+            <h3>1. 普通接口测试</h3>
+            <button onclick="testNormal()">测试普通接口</button>
+            <div id="normalResult" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. 流式接口测试</h3>
+            <button onclick="testStreaming()">测试流式接口</button>
+            <div id="streamingResult" class="result streaming"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. 模拟流式输出测试</h3>
+            <button onclick="testSimulatedStreaming()">测试模拟流式</button>
+            <div id="simulatedResult" class="result streaming"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testNormal() {
+            const resultDiv = document.getElementById('normalResult');
+            resultDiv.innerHTML = '测试中...';
+            
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: '请简单介绍一下这个系统' })
+                });
+                
+                if (response.ok) {
+                    const answer = await response.text();
+                    resultDiv.innerHTML = `✅ 测试成功:\n${answer}`;
+                } else {
+                    resultDiv.innerHTML = `❌ 请求失败: ${response.status}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ 错误: ${error.message}`;
+            }
+        }
+
+        async function testStreaming() {
+            const resultDiv = document.getElementById('streamingResult');
+            resultDiv.innerHTML = '测试中...';
+            
+            try {
+                const response = await fetch('/ask-stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: '请简单介绍一下这个系统' })
+                });
+                
+                if (response.ok) {
+                    const answer = await response.text();
+                    resultDiv.innerHTML = `✅ 流式接口返回:\n${answer}`;
+                } else {
+                    resultDiv.innerHTML = `❌ 请求失败: ${response.status}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ 错误: ${error.message}`;
+            }
+        }
+
+        async function testSimulatedStreaming() {
+            const resultDiv = document.getElementById('simulatedResult');
+            resultDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch('/ask-stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: '请简单介绍一下这个系统' })
+                });
+                
+                if (response.ok) {
+                    const answer = await response.text();
+                    
+                    // 模拟流式输出效果
+                    let currentIndex = 0;
+                    const words = answer.split('');
+                    
+                    const interval = setInterval(() => {
+                        if (currentIndex >= words.length) {
+                            clearInterval(interval);
+                            return;
+                        }
+                        
+                        const currentContent = words.slice(0, currentIndex + 1).join('');
+                        resultDiv.innerHTML = currentContent + '<span class="cursor"></span>';
+                        currentIndex++;
+                    }, 30);
+                    
+                } else {
+                    resultDiv.innerHTML = `❌ 请求失败: ${response.status}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ 错误: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

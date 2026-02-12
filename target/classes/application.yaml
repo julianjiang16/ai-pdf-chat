@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: ai-pdf-chat
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+server:
+  port: 8080
+
+# PDF文件路径配置
+pdf:
+  path: E:/books/大数据/HBase不睡觉书 带目录（高清）.pdf
+
+# LangChain4j配置
+langchain4j:
+  ollama:
+    base-url: http://localhost:11434
+    model-name: qwen:1.8b
+    timeout: 180s
